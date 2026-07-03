@@ -1,4 +1,12 @@
 import os
+
+def load_experts_list(filepath: str = "experts.txt") -> str:
+    if os.path.exists(filepath):
+        with open(filepath, encoding="utf-8") as f:
+            return f.read().strip()
+    return "Aucun expert disponible pour le moment."
+
+experts_list = load_experts_list()
 import io
 import json
 import uuid
@@ -41,11 +49,7 @@ client = genai.Client()
 sessions: dict[str, list] = {}
 
 class DiagnosticReport(BaseModel):
-    plante: str = Field(description="Nom commun de la plante (sans nom scientifique).")
-    etat_de_sante: str = Field(description="Saine ou Malade.")
-    diagnostic: str = Field(description="Nom de la maladie ou du ravageur, agent responsable et niveau de certitude.")
-    symptomes_cles: str = Field(description="Résumé en 1 ou 2 phrases courtes des principaux signes visibles sur l'image.")
-    recommandations_majeures: list[str] = Field(description="Liste de 2 ou 3 actions concrètes très courtes (maximum 5 mots par recommandation, sans parenthèses ni explications, pas de solutions exagérées qui peuvent nuire aux agriculteurs).")
+    resume: str = Field(description="Résumé en prose de l'analyse de la plante : nom, état de santé, diagnostic, symptômes et recommandations, rédigé en un ou deux paragraphes naturels et fluides.")
 
 class ChatResponse(BaseModel):
     reply: str = Field(description="Réponse de l'assistant agricole.")
@@ -56,16 +60,35 @@ class DeleteSessionResponse(BaseModel):
 
 diagnostic_system_prompt = (
     "Tu es un expert d'agriculture et phytopathologiste. "
-    "Ton rôle est d'analyser des images de plantes de manière scientifique et de remplir le schéma JSON requis avec précision. "
-    "Sois court et va droit à l'essentiel dans les descriptions."
+    "Analyse l'image de manière scientifique et rédige un résumé en prose naturelle, "
+    "comme si tu expliquais ton diagnostic à voix haute à un agriculteur. "
+    "Ne liste pas des champs séparés (plante: X, état: Y) — intègre tout dans un texte fluide et cohérent. "
+    "Mentionne la plante, son état de santé, le diagnostic précis (maladie/ravageur, agent responsable, niveau de certitude) "
+    "et les symptômes visibles, en 3 à 5 phrases. "
+    "Sois concis et va droit à l'essentiel.\n\n"
+    "Pour les recommandations : "
+    "formule des actions professionnelles et prudentes, comme un agronome s'adressant à un agriculteur non-spécialiste. "
+    "N'indique jamais de nom de produit chimique précis, de dosage, ni de quantité — recommande plutôt de consulter "
+    "un agent agricole local ou un revendeur de produits phytosanitaires certifié pour le traitement adapté. "
+    "Privilégie les pratiques culturales sûres et éprouvées (retrait des parties infectées, rotation des cultures, "
+    "espacement, drainage, désinfection des outils) avant toute mention de traitement chimique. "
+    "Ne suggère jamais d'action pouvant nuire à la santé de l'agriculteur, à l'environnement, ou aggraver la situation "
+    "si mal appliquée. "
+    "Reste factuel et évite tout ton alarmiste ou exagéré."
 )
 
 chat_system_prompt = (
     "Tu es un assistant agricole expert et bienveillant, spécialisé en agronomie, phytopathologie et agriculture durable. "
-    "Tu aides les agriculteurs à diagnostiquer les maladies de leurs plantes, à choisir des traitements adaptés et à améliorer leurs pratiques. "
+    "Tu aides les agriculteurs à diagnostiquer les maladies de leurs plantes, à choisir des pratiques adaptées et à améliorer leurs pratiques. "
     "Lorsqu'une image est fournie, analyse-la attentivement avant de répondre. "
     "Tes réponses sont claires, pratiques et adaptées aux agriculteurs de terrain. "
-    "Réponds toujours dans la langue de l'utilisateur."
+    "Réponds toujours dans la langue de l'utilisateur.\n\n"
+    "Si l'utilisateur demande à parler à un expert, à être mis en contact avec un agronome, "
+    "ou à obtenir un avis humain professionnel, propose-lui un ou plusieurs experts "
+    "de la liste ci-dessous, en choisissant celui dont la spécialité correspond le mieux à son besoin. "
+    "Ne propose jamais un expert qui n'est pas dans cette liste. "
+    "Si la liste est vide ou ne contient aucun profil pertinent, dis-le clairement et ne propose rien.\n\n"
+    f"Liste des experts disponibles :\n{experts_list}"
 )
 
 @app.post(
@@ -87,7 +110,7 @@ async def diagnose_plant(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=f"Image invalide ou corrompue: {str(e)}")
 
     try:
-        # 3. Appel de l'API Gemini avec Structured Output
+        # 3. Appel de l'API Gemini avec résumé en prose
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=[
@@ -96,14 +119,11 @@ async def diagnose_plant(file: UploadFile = File(...)):
             ],
             config=types.GenerateContentConfig(
                 system_instruction=diagnostic_system_prompt,
-                response_mime_type="application/json",
-                response_schema=DiagnosticReport,
             )
         )
 
-        # 4. Parsing et retour du résultat
-        result_dict = json.loads(response.text)
-        return result_dict
+        # 4. Retour du résumé en prose
+        return DiagnosticReport(resume=response.text)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de l'appel à l'API Gemini : {str(e)}")
 

@@ -1,0 +1,102 @@
+Nom: Dr. Kokou Mensah
+Spécialité: Maladies fongiques du cacao et du manioc
+Zone: Kara, Togo
+Contact: +228 90 11 22 33
+
+---
+
+Nom: Dr. Abiba Traoré
+Spécialité: Phytopathologie du maïs et du sorgho, maladies virales des céréales
+Zone: Lomé, Togo
+Contact: +228 91 33 44 55
+
+---
+
+Nom: Ing. Séverin Agbéko
+Spécialité: Fertilité des sols et nutrition des plantes, agronomie des cultures vivrières
+Zone: Sokodé, Togo
+Contact: +228 92 55 66 77
+
+---
+
+Nom: Dr. Fatoumata Coulibaly
+Spécialité: Ravageurs et insectes nuisibles (légumineuses, coton, maraîchage)
+Zone: Atakpamé, Togo
+Contact: +228 93 77 88 99
+
+---
+
+Nom: Ing. Yves Koffi Adzodo
+Spécialité: Agriculture durable, agroécologie et compostage
+Zone: Tsévié, Togo
+Contact: +228 90 22 33 44
+
+---
+
+Nom: Dr. Madeleine Amouzou
+Spécialité: Maladies bactériennes et virales des tomates, poivrons et aubergines
+Zone: Lomé, Togo
+Contact: +228 91 44 55 66
+
+---
+
+Nom: Ing. Kossi Djédjé
+Spécialité: Irrigation, gestion de l'eau agricole et drainage
+Zone: Kpalimé, Togo
+Contact: +228 92 66 77 88
+
+---
+
+Nom: Dr. Rébecca Sossah
+Spécialité: Maladies des cultures de palmier à huile et cocotier
+Zone: Aného, Togo
+Contact: +228 93 88 99 00
+
+---
+
+Nom: Ing. Komlan Attivor
+Spécialité: Protection des cultures maraîchères (choux, laitue, oignon, carotte)
+Zone: Dapaong, Togo
+Contact: +228 90 44 55 66
+
+---
+
+Nom: Dr. Saliou Issifou
+Spécialité: Phytopathologie du coton et des légumineuses (niébé, arachide, soja)
+Zone: Bassar, Togo
+Contact: +228 91 66 77 88
+
+---
+
+Nom: Ing. Pauline Gnagna Koudjo
+Spécialité: Semences améliorées, sélection variétale et stockage post-récolte
+Zone: Notsé, Togo
+Contact: +228 92 88 99 11
+
+---
+
+Nom: Dr. Aristide Hounsou
+Spécialité: Maladies du bananier et du plantain (cercosporiose, fusariose)
+Zone: Kpalimé, Togo
+Contact: +228 93 99 00 11
+
+---
+
+Nom: Ing. Akossiwa Dossou
+Spécialité: Élevage et santé animale, agroélevage mixte
+Zone: Lomé, Togo
+Contact: +228 90 33 44 55
+
+---
+
+Nom: Dr. Tchilabalo Pali
+Spécialité: Gestion intégrée des ravageurs (GIR), entomologie agricole
+Zone: Kara, Togo
+Contact: +228 91 55 66 77
+
+---
+
+Nom: Ing. Mawuénam Akpene
+Spécialité: Cultures sous serre, maraîchage intensif et hydroponique
+Zone: Lomé, Togo
+Contact: +228 92 77 88 99
