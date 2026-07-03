@@ -48,8 +48,15 @@ client = genai.Client()
 # Stockage des sessions en mémoire (session_id -> historique messages)
 sessions: dict[str, list] = {}
 
+class Expert(BaseModel):
+    nom: str = Field(description="Nom de l'expert")
+    specialite: str = Field(description="Spécialité de l'expert")
+    zone: str = Field(description="Zone géographique de l'expert")
+    contact: str = Field(description="Numéro de contact de l'expert")
+
 class DiagnosticReport(BaseModel):
-    resume: str = Field(description="Résumé en prose de l'analyse de la plante : nom, état de santé, diagnostic, symptômes et recommandations, rédigé en un ou deux paragraphes naturels et fluides.")
+    resume: str = Field(description="Résumé court de l'analyse en prose, limité strictement à deux lignes ou deux phrases courtes.")
+    experts: list[Expert] = Field(default=[], description="Liste des experts recommandés pour cette pathologie ou cette plante, choisis parmi la liste des experts fournis.")
 
 class ChatResponse(BaseModel):
     reply: str = Field(description="Réponse de l'assistant agricole.")
@@ -57,24 +64,16 @@ class ChatResponse(BaseModel):
 
 class DeleteSessionResponse(BaseModel):
     message: str
-
+ 
 diagnostic_system_prompt = (
     "Tu es un expert d'agriculture et phytopathologiste. "
-    "Analyse l'image de manière scientifique et rédige un résumé en prose naturelle, "
-    "comme si tu expliquais ton diagnostic à voix haute à un agriculteur. "
-    "Ne liste pas des champs séparés (plante: X, état: Y) — intègre tout dans un texte fluide et cohérent. "
-    "Mentionne la plante, son état de santé, le diagnostic précis (maladie/ravageur, agent responsable, niveau de certitude) "
-    "et les symptômes visibles, en 3 à 5 phrases. "
-    "Sois concis et va droit à l'essentiel.\n\n"
-    "Pour les recommandations : "
-    "formule des actions professionnelles et prudentes, comme un agronome s'adressant à un agriculteur non-spécialiste. "
-    "N'indique jamais de nom de produit chimique précis, de dosage, ni de quantité — recommande plutôt de consulter "
-    "un agent agricole local ou un revendeur de produits phytosanitaires certifié pour le traitement adapté. "
-    "Privilégie les pratiques culturales sûres et éprouvées (retrait des parties infectées, rotation des cultures, "
-    "espacement, drainage, désinfection des outils) avant toute mention de traitement chimique. "
-    "Ne suggère jamais d'action pouvant nuire à la santé de l'agriculteur, à l'environnement, ou aggraver la situation "
-    "si mal appliquée. "
-    "Reste factuel et évite tout ton alarmiste ou exagéré."
+    "Analyse l'image pour le diagnostic.\n\n"
+    "1. Rédige un diagnostic très court en prose de deux lignes maximum (deux phrases courtes) pour le champ 'resume'. "
+    "La première ligne doit identifier la plante, son état et la maladie/ravageur. "
+    "La seconde ligne doit donner la recommandation principale (pratique culturale ou consultation).\n\n"
+    "2. Sélectionne dans la liste ci-dessous le ou les experts dont la spécialité correspond au diagnostic de la plante et remplis le champ 'experts'. "
+    "Ne propose aucun expert qui ne figure pas dans cette liste. Si aucun expert n'est pertinent, laisse la liste vide.\n\n"
+    f"Liste des experts disponibles :\n{experts_list}"
 )
 
 chat_system_prompt = (
@@ -110,7 +109,7 @@ async def diagnose_plant(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=f"Image invalide ou corrompue: {str(e)}")
 
     try:
-        # 3. Appel de l'API Gemini avec résumé en prose
+        # 3. Appel de l'API Gemini avec Structured Output
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=[
@@ -119,11 +118,14 @@ async def diagnose_plant(file: UploadFile = File(...)):
             ],
             config=types.GenerateContentConfig(
                 system_instruction=diagnostic_system_prompt,
+                response_mime_type="application/json",
+                response_schema=DiagnosticReport,
             )
         )
 
-        # 4. Retour du résumé en prose
-        return DiagnosticReport(resume=response.text)
+        # 4. Parsing et retour du résultat
+        result_dict = json.loads(response.text)
+        return result_dict
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erreur lors de l'appel à l'API Gemini : {str(e)}")
 
