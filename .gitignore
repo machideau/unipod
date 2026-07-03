@@ -1,0 +1,173 @@
+# ============================================================
+#  E-Farm — .gitignore
+# ============================================================
+
+# ─── Secrets & Configuration ────────────────────────────────
+.env
+.env.*
+*.env
+secrets.json
+config.local.*
+
+# ─── Python ─────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.pyc
+
+# Virtual environments
+env/
+venv/
+.venv/
+ENV/
+.env/
+env.bak/
+venv.bak/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+.eggs/
+MANIFEST
+
+# Testing & coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+nosetests.xml
+coverage.xml
+*.cover
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+.pyre/
+
+# Jupyter Notebooks checkpoints
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# ─── ML / Modèles ───────────────────────────────────────────
+*.keras
+*.h5
+*.pkl
+*.pickle
+*.pt
+*.pth
+*.onnx
+*.tflite
+*.pb
+saved_model/
+checkpoints/
+runs/
+logs/
+mlruns/
+
+# Datasets (fichiers volumineux)
+*.csv
+*.parquet
+*.json.gz
+data/
+datasets/
+
+# ─── Images & médias (générés / temporaires) ─────────────────
+# Décommentez si vous ne voulez pas versionner les images
+# *.png
+# *.jpg
+# *.jpeg
+# *.gif
+# *.webp
+
+# ─── Flutter / Dart ──────────────────────────────────────────
+# Build outputs
+flutter/build/
+flutter/.dart_tool/
+flutter/.flutter-plugins
+flutter/.flutter-plugins-dependencies
+flutter/.pub-cache/
+flutter/.pub/
+flutter/pubspec.lock  # à conserver si projet d'équipe, sinon ignorer
+
+# Android
+flutter/android/.gradle/
+flutter/android/local.properties
+flutter/android/key.properties
+flutter/android/app/google-services.json
+flutter/android/captures/
+flutter/android/*.jks
+flutter/android/*.keystore
+
+# iOS
+flutter/ios/Pods/
+flutter/ios/.symlinks/
+flutter/ios/Flutter/Flutter.framework
+flutter/ios/Flutter/Flutter.podspec
+flutter/ios/Flutter/Generated.xcconfig
+flutter/ios/Runner/GeneratedPluginRegistrant.*
+flutter/ios/*.xcworkspace/xcuserdata/
+
+# macOS
+flutter/macos/Pods/
+flutter/macos/Flutter/GeneratedPluginRegistrant.swift
+flutter/macos/Flutter/ephemeral/
+
+# ─── IDEs & Éditeurs ─────────────────────────────────────────
+# VS Code
+.vscode/
+*.code-workspace
+
+# JetBrains (PyCharm, IntelliJ, Android Studio)
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Vim / Emacs
+*.swp
+*.swo
+*~
+\#*\#
+.\#*
+
+# ─── OS ──────────────────────────────────────────────────────
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Linux
+.directory
+.Trash-*
+
+# ─── Logs & temporaires ──────────────────────────────────────
+*.log
+*.tmp
+*.temp
+*.bak
+*.orig
+*.pid
+*.seed
+*.cache
+tmp/
+temp/
