@@ -1,12 +1,103 @@
 import os
 
-def load_experts_list(filepath: str = "experts.txt") -> str:
-    if os.path.exists(filepath):
-        with open(filepath, encoding="utf-8") as f:
-            return f.read().strip()
-    return "Aucun expert disponible pour le moment."
+EXPERTS = [
+    {
+        "nom": "Dr. Kokou Mensah",
+        "specialite": "Maladies fongiques du cacao et du manioc",
+        "zone": "Kara, Togo",
+        "contact": "+228 90 11 22 33"
+    },
+    {
+        "nom": "Dr. Abiba Traoré",
+        "specialite": "Phytopathologie du maïs et du sorgho, maladies virales des céréales",
+        "zone": "Lomé, Togo",
+        "contact": "+228 91 33 44 55"
+    },
+    {
+        "nom": "Ing. Séverin Agbéko",
+        "specialite": "Fertilité des sols et nutrition des plantes, agronomie des cultures vivrières",
+        "zone": "Sokodé, Togo",
+        "contact": "+228 92 55 66 77"
+    },
+    {
+        "nom": "Dr. Fatoumata Coulibaly",
+        "specialite": "Ravageurs et insectes nuisibles (légumineuses, coton, maraîchage)",
+        "zone": "Atakpamé, Togo",
+        "contact": "+228 93 77 88 99"
+    },
+    {
+        "nom": "Ing. Yves Koffi Adzodo",
+        "specialite": "Agriculture durable, agroécologie et compostage",
+        "zone": "Tsévié, Togo",
+        "contact": "+228 90 22 33 44"
+    },
+    {
+        "nom": "Dr. Madeleine Amouzou",
+        "specialite": "Maladies bactériennes et virales des tomates, poivrons et aubergines",
+        "zone": "Lomé, Togo",
+        "contact": "+228 91 44 55 66"
+    },
+    {
+        "nom": "Ing. Kossi Djédjé",
+        "specialite": "Irrigation, gestion de l'eau agricole et drainage",
+        "zone": "Kpalimé, Togo",
+        "contact": "+228 92 66 77 88"
+    },
+    {
+        "nom": "Dr. Rébecca Sossah",
+        "specialite": "Maladies des cultures de palmier à huile et cocotier",
+        "zone": "Aného, Togo",
+        "contact": "+228 93 88 99 00"
+    },
+    {
+        "nom": "Ing. Komlan Attivor",
+        "specialite": "Protection des cultures maraîchères (choux, laitue, oignon, carotte)",
+        "zone": "Dapaong, Togo",
+        "contact": "+228 90 44 55 66"
+    },
+    {
+        "nom": "Dr. Saliou Issifou",
+        "specialite": "Phytopathologie du coton et des légumineuses (niébé, arachide, soja)",
+        "zone": "Bassar, Togo",
+        "contact": "+228 91 66 77 88"
+    },
+    {
+        "nom": "Ing. Pauline Gnagna Koudjo",
+        "specialite": "Semences améliorées, sélection variétale et stockage post-récolte",
+        "zone": "Notsé, Togo",
+        "contact": "+228 92 88 99 11"
+    },
+    {
+        "nom": "Dr. Aristide Hounsou",
+        "specialite": "Maladies du bananier et du plantain (cercosporiose, fusariose)",
+        "zone": "Kpalimé, Togo",
+        "contact": "+228 93 99 00 11"
+    },
+    {
+        "nom": "Ing. Akossiwa Dossou",
+        "specialite": "Élevage et santé animale, agroélevage mixte",
+        "zone": "Lomé, Togo",
+        "contact": "+228 90 33 44 55"
+    },
+    {
+        "nom": "Dr. Tchilabalo Pali",
+        "specialite": "Gestion intégrée des ravageurs (GIR), entomologie agricole",
+        "zone": "Kara, Togo",
+        "contact": "+228 91 55 66 77"
+    },
+    {
+        "nom": "Ing. Mawuénam Akpene",
+        "specialite": "Cultures sous serre, maraîchage intensif et hydroponique",
+        "zone": "Lomé, Togo",
+        "contact": "+228 92 77 88 99"
+    }
+]
 
-experts_list = load_experts_list()
+# Formater la liste en texte brut pour les prompts système
+experts_list = "\n---\n".join([
+    f"Nom: {e['nom']}\nSpécialité: {e['specialite']}\nZone: {e['zone']}\nContact: {e['contact']}"
+    for e in EXPERTS
+])
 import io
 import json
 import uuid
@@ -18,14 +109,62 @@ from google import genai
 from google.genai import types
 from PIL import Image
 
-# Charger la clé API depuis le fichier .env si présent
-if os.path.exists('.env'):
-    with open('.env') as f:
-        for line in f:
-            if line.strip() and not line.startswith('#'):
-                parts = line.strip().split('=', 1)
-                if len(parts) == 2:
-                    os.environ[parts[0]] = parts[1]
+# Charger toutes les clés API Gemini disponibles depuis le fichier .env
+def load_api_keys() -> list[str]:
+    if os.path.exists('.env'):
+        with open('.env', encoding='utf-8') as f:
+            for line in f:
+                if line.strip() and not line.startswith('#'):
+                    parts = line.strip().split('=', 1)
+                    if len(parts) == 2:
+                        key = parts[0].strip()
+                        val = parts[1].strip().strip('"').strip("'")
+                        os.environ[key] = val
+
+    keys = []
+    
+    # 1. Tenter de lire sous forme de liste (séparée par des virgules ou au format JSON) dans GEMINI_API_KEYS
+    env_keys = os.environ.get("GEMINI_API_KEYS", "")
+    if env_keys:
+        try:
+            import json
+            parsed = json.loads(env_keys)
+            if isinstance(parsed, list):
+                keys.extend([str(k).strip() for k in parsed if k])
+        except Exception:
+            keys.extend([k.strip() for k in env_keys.split(",") if k.strip()])
+            
+    # 2. Tenter de lire les clés individuelles
+    single = os.environ.get("GEMINI_API_KEY", "")
+    if single and single not in keys:
+        keys.append(single)
+        
+    i = 1
+    while True:
+        k = os.environ.get(f"GEMINI_API_KEY_{i}", "")
+        if not k:
+            break
+        if k not in keys:
+            keys.append(k)
+        i += 1
+        
+    if not keys:
+        raise RuntimeError("Aucune clé API Gemini trouvée dans le fichier .env ou les variables d'environnement.")
+    return keys
+
+API_KEYS = load_api_keys()
+
+def gemini_generate_with_fallback(**kwargs):
+    """Appelle l'API Gemini en essayant chaque clé disponible en cas d'échec."""
+    last_error = None
+    for key in API_KEYS:
+        try:
+            client = genai.Client(api_key=key)
+            return client.models.generate_content(**kwargs)
+        except Exception as e:
+            last_error = e
+            continue
+    raise last_error
 
 app = FastAPI(
     title="E-Farm API",
@@ -42,9 +181,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialisation du client GenAI
-client = genai.Client()
-
 # Stockage des sessions en mémoire (session_id -> historique messages)
 sessions: dict[str, list] = {}
 
@@ -55,7 +191,7 @@ class Expert(BaseModel):
     contact: str = Field(description="Numéro de contact de l'expert")
 
 class DiagnosticReport(BaseModel):
-    resume: str = Field(description="Résumé court de l'analyse en prose, limité strictement à deux lignes ou deux phrases courtes.")
+    resume: str = Field(description="Résumé de l'analyse, strictement limité à 2 phrases courtes et maximum 30 mots au total.")
     experts: list[Expert] = Field(default=[], description="Liste des experts recommandés pour cette pathologie ou cette plante, choisis parmi la liste des experts fournis.")
 
 class ChatResponse(BaseModel):
@@ -66,13 +202,22 @@ class DeleteSessionResponse(BaseModel):
     message: str
  
 diagnostic_system_prompt = (
-    "Tu es un expert d'agriculture et phytopathologiste. "
+    "Tu es un expert agronome et phytopathologiste expérimenté, habitué à conseiller des agriculteurs de terrain. "
     "Analyse l'image pour le diagnostic.\n\n"
-    "1. Rédige un diagnostic très court en prose de deux lignes maximum (deux phrases courtes) pour le champ 'resume'. "
-    "La première ligne doit identifier la plante, son état et la maladie/ravageur. "
-    "La seconde ligne doit donner la recommandation principale (pratique culturale ou consultation).\n\n"
-    "2. Sélectionne dans la liste ci-dessous le ou les experts dont la spécialité correspond au diagnostic de la plante et remplis le champ 'experts'. "
-    "Ne propose aucun expert qui ne figure pas dans cette liste. Si aucun expert n'est pertinent, laisse la liste vide.\n\n"
+    "1. Rédige un diagnostic ultra-court dans le champ 'resume'. Il doit contenir STRICTEMENT deux phrases courtes et maximum 30 mots au total :\n"
+    "   - Phrase 1 : Identifie la plante, son état de santé et la maladie/ravageur.\n"
+    "   - Phrase 2 : Donne l'unique recommandation principale réaliste (selon les règles ci-dessous).\n"
+    "   Ne fais aucune introduction, aucune transition, aucun bavardage. Va droit au but.\n\n"
+    "RÈGLES POUR LA RECOMMANDATION :\n"
+    "- Observe d'abord le stade de croissance visible sur l'image (jeune plant, plant en croissance, plant adulte/mature, plant en floraison ou fructification).\n"
+    "- Adapte impérativement ton conseil à ce stade : une action faisable sur un jeune plant peut être totalement irréaliste sur un plant adulte.\n"
+    "- N'indique JAMAIS d'arracher, détruire, ou replanter si la plante semble être à un stade avancé (adulte, en fleur ou en fruit) — ce serait une perte économique inacceptable pour l'agriculteur.\n"
+    "- Pour les plants adultes ou avancés : oriente vers la gestion de la maladie sur place (suppression des parties atteintes, traitement localisé, limitation de la propagation, consultation d'un agent agricole).\n"
+    "- Pour les jeunes plants : des actions plus radicales (isolement, remplacement) peuvent être envisagées si justifiées.\n"
+    "- Reste toujours réaliste, faisable et économiquement responsable. N'exagère pas la gravité.\n"
+    "- Ne mentionne jamais de produit chimique précis, de dosage ou de quantité.\n\n"
+    "2. Sélectionne dans la liste ci-dessous le ou les experts dont la spécialité correspond au diagnostic et remplis le champ 'experts'. "
+    "Ne propose aucun expert absent de cette liste. Si aucun n'est pertinent, laisse la liste vide.\n\n"
     f"Liste des experts disponibles :\n{experts_list}"
 )
 
@@ -109,8 +254,8 @@ async def diagnose_plant(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=f"Image invalide ou corrompue: {str(e)}")
 
     try:
-        # 3. Appel de l'API Gemini avec Structured Output
-        response = client.models.generate_content(
+        # 3. Appel de l'API Gemini avec Structured Output (+ fallback multi-clés)
+        response = gemini_generate_with_fallback(
             model='gemini-2.5-flash',
             contents=[
                 image,
@@ -171,8 +316,8 @@ async def chat(
     )
 
     try:
-        # 4. Appel Gemini avec historique complet
-        response = client.models.generate_content(
+        # 4. Appel Gemini avec historique complet (+ fallback multi-clés)
+        response = gemini_generate_with_fallback(
             model='gemini-2.5-flash',
             contents=history,
             config=types.GenerateContentConfig(
